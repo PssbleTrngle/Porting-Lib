@@ -63,7 +63,6 @@
   "client": [
     "client.ClientLevel$EntityCallbacksMixin",
     "client.ClientLevelMixin",
-    "client.EffectRenderingInventoryScreenMixin",
     "client.EntityRenderDispatcherMixin",
     "client.GuiMixin",
     "client.LocalPlayerMixin",
