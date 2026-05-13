@@ -11,19 +11,7 @@ targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = "porting_lib"
 
-Provider<String> branchProvider = providers.exec {
-	it.setCommandLine("git", "branch", "--show-current")
-}.standardOutput.asText.map {
-	it.contains("not a git repository") ? "unknown" : it.trim()
-}
-
-String versionNumber = providers.provider {
-	String version = mod_version // 2.3.1
-	if (System.getenv("SNAPSHOT") == "true") {
-		version += "-beta." + System.getenv("GITHUB_RUN_NUMBER") // 2.3.1-beta.1000
-	}
-	return version + "+" + branchProvider.get() // 2.3.1-beta.1000+1.20.1
-}.get()
+def versionNumber = project.mod_version
 
 dependencies {
 	subprojects.forEach {
@@ -202,16 +190,17 @@ subprojects {
 
 	publishing {
 		repositories {
-			maven {
-				name = "devOS"
-				String mavenType = System.getenv("RELEASE") == "true" ? "releases" : "snapshots"
-				url = "https://mvn.devos.one/$mavenType/"
-				credentials {
-					username = System.getenv("MAVEN_USER")
-					password = System.getenv("MAVEN_PASS")
-				}
-				authentication {
-					register("basic", BasicAuthentication)
+			mavenLocal()
+			def nexusToken = System.getenv("NEXUS_TOKEN")
+			def nexusUser = System.getenv("NEXUS_USER")
+
+			if (nexusToken != null && nexusUser != null) {
+				maven {
+					url = uri("https://registry.somethingcatchy.net/repository/maven-snapshots/")
+					credentials {
+						username = nexusUser
+						password = nexusToken
+					}
 				}
 			}
 		}
